@@ -5,6 +5,7 @@ const getAllStudents = async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, name, school, major, year, interests, hobbies, bio, profile_photo, looking_for,
+       gender, sexual_orientation, date_of_birth,
        prompt1_question, prompt1_answer, prompt2_question, prompt2_answer 
        FROM students ORDER BY created_at DESC`
     );
@@ -21,7 +22,7 @@ const getStudentById = async (req, res) => {
     const result = await pool.query(
       `SELECT id, name, email, school, major, year, interests, hobbies, 
        favorite_shows, favorite_movies, favorite_books, favorite_music, 
-       bio, profile_photo, looking_for, created_at,
+       bio, profile_photo, looking_for, gender, sexual_orientation, date_of_birth, created_at,
        prompt1_question, prompt1_answer, prompt2_question, prompt2_answer 
        FROM students WHERE id = $1`,
       [id]
@@ -42,6 +43,7 @@ const createStudent = async (req, res) => {
   try {
     const { 
       email, name, password, school, major, year, 
+      gender, sexual_orientation, date_of_birth,
       interests, hobbies, favorite_shows, favorite_movies, 
       favorite_books, favorite_music, bio, looking_for, profile_photo,
       prompt1_question, prompt1_answer, prompt2_question, prompt2_answer
@@ -49,14 +51,14 @@ const createStudent = async (req, res) => {
     
     const result = await pool.query(
       `INSERT INTO students 
-       (email, name, password_hash, school, major, year, interests, hobbies, 
-        favorite_shows, favorite_movies, favorite_books, favorite_music, bio, looking_for, profile_photo,
-        prompt1_question, prompt1_answer, prompt2_question, prompt2_answer) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) 
-       RETURNING id, name, email, school, major, year`,
-      [email, name, password, school, major, year, interests, hobbies, 
-       favorite_shows, favorite_movies, favorite_books, favorite_music, bio, looking_for, profile_photo,
-       prompt1_question, prompt1_answer, prompt2_question, prompt2_answer]
+       (email, name, password_hash, school, major, year, gender, sexual_orientation, date_of_birth,
+        interests, hobbies, favorite_shows, favorite_movies, favorite_books, favorite_music, 
+        bio, looking_for, profile_photo, prompt1_question, prompt1_answer, prompt2_question, prompt2_answer) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) 
+       RETURNING id, name, email, school, major, year, gender, sexual_orientation, date_of_birth`,
+      [email, name, password, school, major, year, gender, sexual_orientation, date_of_birth,
+       interests, hobbies, favorite_shows, favorite_movies, favorite_books, favorite_music, 
+       bio, looking_for, profile_photo, prompt1_question, prompt1_answer, prompt2_question, prompt2_answer]
     );
     
     res.status(201).json(result.rows[0]);
@@ -71,7 +73,8 @@ const loginStudent = async (req, res) => {
     const { email, password } = req.body;
     
     const result = await pool.query(
-      `SELECT id, name, email, school, major, year, interests, hobbies, bio, profile_photo, looking_for, prompt1_answer, prompt2_answer 
+      `SELECT id, name, email, school, major, year, interests, hobbies, bio, profile_photo, 
+       looking_for, gender, sexual_orientation, date_of_birth, prompt1_answer, prompt2_answer 
        FROM students WHERE email = $1 AND password_hash = $2`,
       [email, password]
     );
@@ -105,7 +108,8 @@ const updateStudent = async (req, res) => {
        WHERE id = $13
        RETURNING id, name, email, school, major, year, bio, interests, hobbies, 
                  favorite_shows, favorite_movies, favorite_books, favorite_music,
-                 prompt1_question, prompt1_answer, prompt2_question, prompt2_answer, profile_photo, looking_for`,
+                 prompt1_question, prompt1_answer, prompt2_question, prompt2_answer, 
+                 profile_photo, looking_for, gender, sexual_orientation, date_of_birth`,
       [bio, interests, hobbies, favorite_shows, favorite_movies, favorite_books, favorite_music,
        prompt1_question, prompt1_answer, prompt2_question, prompt2_answer, profile_photo, id]
     );
