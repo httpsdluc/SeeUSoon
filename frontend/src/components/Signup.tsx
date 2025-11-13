@@ -32,6 +32,9 @@ export function Signup() {
     school: '',
     major: '',
     year: 1,
+    gender: '',
+    sexual_orientation: '',
+    date_of_birth: '',
     
     // Step 2: Interests, Hobbies & Prompts
     interests: '',
@@ -47,7 +50,6 @@ export function Signup() {
     
     // Step 3: About You & Photo
     bio: '',
-    looking_for: 'friendship',
     profile_photo: ''
   });
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -103,6 +105,22 @@ export function Signup() {
     return null;
   };
 
+  const validateAge = (dateOfBirth: string) => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    if (age < 18) {
+      return 'You must be 18 or older to use SeeUSoon';
+    }
+    return null;
+  };
+
   const handleNext = () => {
     if (step === 1) {
       const emailError = validateEmail(formData.email);
@@ -110,7 +128,14 @@ export function Signup() {
         setError(emailError);
         return;
       }
-      if (!formData.name || !formData.email || !formData.password || !formData.school || !formData.major) {
+      
+      const ageError = validateAge(formData.date_of_birth);
+      if (ageError) {
+        setError(ageError);
+        return;
+      }
+      
+      if (!formData.name || !formData.email || !formData.password || !formData.school || !formData.major || !formData.gender || !formData.sexual_orientation || !formData.date_of_birth) {
         setError('Please fill in all required fields');
         return;
       }
@@ -143,7 +168,8 @@ export function Signup() {
       const response = await studentsAPI.create({
         ...formData,
         interests: interestsArray,
-        hobbies: hobbiesArray
+        hobbies: hobbiesArray,
+        looking_for: 'dating'
       });
 
       localStorage.setItem('student', JSON.stringify(response.data));
@@ -159,11 +185,11 @@ export function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-red-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl p-6 md:p-8 my-8">
         <div className="text-center mb-6">
           <div className="flex justify-center mb-3">
-            <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-red-500 rounded-full flex items-center justify-center">
               <Sparkles className="w-8 h-8 text-white" />
             </div>
           </div>
@@ -173,9 +199,9 @@ export function Signup() {
 
         <div className="mb-6">
           <div className="flex gap-2">
-            <div className={`h-2 flex-1 rounded ${step >= 1 ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>
-            <div className={`h-2 flex-1 rounded ${step >= 2 ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>
-            <div className={`h-2 flex-1 rounded ${step >= 3 ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>
+            <div className={`h-2 flex-1 rounded ${step >= 1 ? 'bg-gradient-to-r from-pink-500 to-red-500' : 'bg-gray-200'}`}></div>
+            <div className={`h-2 flex-1 rounded ${step >= 2 ? 'bg-gradient-to-r from-pink-500 to-red-500' : 'bg-gray-200'}`}></div>
+            <div className={`h-2 flex-1 rounded ${step >= 3 ? 'bg-gradient-to-r from-pink-500 to-red-500' : 'bg-gray-200'}`}></div>
           </div>
         </div>
 
@@ -243,6 +269,22 @@ export function Signup() {
               </div>
 
               <div>
+                <Label htmlFor="date_of_birth" className="flex items-center gap-2 mb-2">
+                  <Calendar className="w-4 h-4" />
+                  Date of Birth * (Must be 18+)
+                </Label>
+                <Input
+                  id="date_of_birth"
+                  name="date_of_birth"
+                  type="date"
+                  value={formData.date_of_birth}
+                  onChange={handleChange}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+                  required
+                />
+              </div>
+
+              <div>
                 <Label htmlFor="school" className="flex items-center gap-2 mb-2">
                   <School className="w-4 h-4" />
                   School/University *
@@ -285,7 +327,7 @@ export function Signup() {
                     name="year"
                     value={formData.year}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                     required
                   >
                     <option value={1}>Freshman</option>
@@ -297,10 +339,53 @@ export function Signup() {
                 </div>
               </div>
 
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="gender">Gender *</Label>
+                  <select
+                    id="gender"
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Non-binary">Non-binary</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+
+                <div>
+                  <Label htmlFor="sexual_orientation">Sexual Orientation *</Label>
+                  <select
+                    id="sexual_orientation"
+                    name="sexual_orientation"
+                    value={formData.sexual_orientation}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select</option>
+                    <option value="Straight">Straight</option>
+                    <option value="Gay">Gay</option>
+                    <option value="Lesbian">Lesbian</option>
+                    <option value="Bisexual">Bisexual</option>
+                    <option value="Pansexual">Pansexual</option>
+                    <option value="Asexual">Asexual</option>
+                    <option value="Queer">Queer</option>
+                    <option value="Questioning">Questioning</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+
               <Button
                 type="button"
                 onClick={handleNext}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 mt-4"
+                className="w-full bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white py-3 mt-4"
               >
                 Next: Tell Us About Yourself →
               </Button>
@@ -314,8 +399,8 @@ export function Signup() {
               <p className="text-sm text-gray-600 mb-4">Help others get to know you better!</p>
 
               {/* Prompts Section */}
-              <div className="bg-indigo-50 p-4 rounded-lg space-y-4">
-                <h3 className="font-semibold text-indigo-900 flex items-center gap-2">
+              <div className="bg-pink-50 p-4 rounded-lg space-y-4">
+                <h3 className="font-semibold text-pink-900 flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
                   Answer 2 Prompts
                 </h3>
@@ -330,7 +415,7 @@ export function Signup() {
                     name="prompt1_question"
                     value={formData.prompt1_question}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 mb-2 text-sm"
+                    className="w-full px-3 py-2 border border-pink-200 rounded-lg focus:ring-2 focus:ring-pink-500 mb-2 text-sm"
                   >
                     {PROMPT_OPTIONS.map((prompt) => (
                       <option key={prompt} value={prompt}>{prompt}</option>
@@ -357,7 +442,7 @@ export function Signup() {
                     name="prompt2_question"
                     value={formData.prompt2_question}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 mb-2 text-sm"
+                    className="w-full px-3 py-2 border border-pink-200 rounded-lg focus:ring-2 focus:ring-pink-500 mb-2 text-sm"
                   >
                     {PROMPT_OPTIONS.map((prompt) => (
                       <option key={prompt} value={prompt}>{prompt}</option>
@@ -479,7 +564,7 @@ export function Signup() {
                 <Button
                   type="button"
                   onClick={handleNext}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="flex-1 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
                 >
                   Next: Photo & Bio →
                 </Button>
@@ -487,7 +572,7 @@ export function Signup() {
             </div>
           )}
 
-          {/* STEP 3: Bio, Photo & Looking For */}
+          {/* STEP 3: Bio & Photo (Removed "Looking For") */}
           {step === 3 && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold mb-4">Finish Your Profile</h2>
@@ -496,7 +581,7 @@ export function Signup() {
               <div>
                 <Label className="mb-2 block">Profile Photo *</Label>
                 {!photoPreview ? (
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-400 transition-colors">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-pink-400 transition-colors">
                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                     <p className="text-sm text-gray-600 mb-2">Upload your profile photo</p>
                     <p className="text-xs text-gray-500 mb-4">PNG, JPG up to 5MB</p>
@@ -542,27 +627,8 @@ export function Signup() {
                   placeholder="Tell us about yourself..."
                   value={formData.bio}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-h-[100px]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent min-h-[100px]"
                 />
-              </div>
-
-              {/* Looking For */}
-              <div>
-                <Label htmlFor="looking_for" className="mb-2 block">
-                  I'm looking for *
-                </Label>
-                <select
-                  id="looking_for"
-                  name="looking_for"
-                  value={formData.looking_for}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                >
-                  <option value="friendship">Friendship</option>
-                  <option value="dating">Dating</option>
-                  <option value="both">Both</option>
-                </select>
               </div>
 
               <div className="flex gap-3 mt-6">
@@ -576,7 +642,7 @@ export function Signup() {
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="flex-1 bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white"
                   disabled={loading || !photoPreview}
                 >
                   {loading ? 'Creating Account...' : 'Create Account 🎉'}
@@ -591,7 +657,7 @@ export function Signup() {
             Already have an account?{' '}
             <button
               onClick={() => navigate('/login')}
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
+              className="text-pink-600 hover:text-pink-700 font-medium"
             >
               Log in
             </button>
