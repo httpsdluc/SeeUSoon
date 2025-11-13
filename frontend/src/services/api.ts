@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://seeusoon.onrender.com';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,53 +9,31 @@ const api = axios.create({
   },
 });
 
-// Students API
 export const studentsAPI = {
-  getAll: () => api.get('/students'),
-  getById: (id: number) => api.get(`/students/${id}`),
-  create: (data: any) => api.post('/students', data),
-  login: (data: { email: string; password: string }) => api.post('/students/login', data),
-  update: (id: number, data: any) => api.put(`/students/${id}`, data),
+  getAll: () => api.get('/api/students'),
+  getById: (id: number) => api.get(`/api/students/${id}`),
+  create: (data: any) => api.post('/api/students', data),
+  update: (id: number, data: any) => api.put(`/api/students/${id}`, data),
+  login: (email: string, password: string) => api.post('/api/students/login', { email, password }),
 };
 
-// Matches API
 export const matchesAPI = {
-  like: (liker_id: number, liked_id: number) => 
-    api.post('/matches/like', { liker_id, liked_id }),
-  pass: (student_id: number) => 
-    api.post('/matches/pass', { student_id }),
-  getMatches: (student_id: number) => 
-    api.get(`/matches/${student_id}`),
+  like: (likerId: number, likedId: number) => api.post('/api/matches/like', { liker_id: likerId, liked_id: likedId }),
+  getMatches: (studentId: number) => api.get(`/api/matches/${studentId}`),
 };
 
-// Messages API
 export const messagesAPI = {
-  send: (sender_id: number, receiver_id: number, message: string) =>
-    api.post('/messages', { sender_id, receiver_id, message }),
-  getConversation: (user_id: number, other_user_id: number) =>
-    api.get(`/messages/${user_id}/${other_user_id}`),
-  getConversations: (user_id: number) =>
-    api.get(`/messages/conversations/${user_id}`),
-  markAsRead: (user_id: number, other_user_id: number) =>
-    api.put(`/messages/read/${user_id}/${other_user_id}`),
+  getMessages: (matchId: number) => api.get(`/api/messages/${matchId}`),
+  sendMessage: (data: any) => api.post('/api/messages', data),
 };
 
-// Schedule API
 export const scheduleAPI = {
-  setAvailability: (student_id: number, day_of_week: number, start_time: string, end_time: string) =>
-    api.post('/schedule/availability', { student_id, day_of_week, start_time, end_time }),
-  getAvailability: (student_id: number) =>
-    api.get(`/schedule/availability/${student_id}`),
-  deleteAvailability: (id: number) =>
-    api.delete(`/schedule/availability/${id}`),
-  getMutualAvailability: (student1_id: number, student2_id: number) =>
-    api.get(`/schedule/mutual/${student1_id}/${student2_id}`),
-  createMeetup: (data: any) =>
-    api.post('/schedule/meetups', data),
-  getMeetups: (student_id: number) =>
-    api.get(`/schedule/meetups/${student_id}`),
-  updateMeetupStatus: (id: number, status: string) =>
-    api.put(`/schedule/meetups/${id}`, { status }),
+  getAvailability: (studentId: number) => api.get(`/api/schedule/${studentId}`),
+  setAvailability: (studentId: number, dayOfWeek: number, startTime: string, endTime: string) =>
+    api.post('/api/schedule', { student_id: studentId, day_of_week: dayOfWeek, start_time: startTime, end_time: endTime }),
+  getMeetups: (studentId: number) => api.get(`/api/schedule/meetups/${studentId}`),
+  createMeetup: (data: any) => api.post('/api/schedule/meetups', data),
+  updateMeetupStatus: (meetupId: number, status: string) => api.put(`/api/schedule/meetups/${meetupId}`, { status }),
 };
 
 export default api;
