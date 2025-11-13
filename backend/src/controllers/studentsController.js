@@ -49,6 +49,16 @@ const createStudent = async (req, res) => {
       prompt1_question, prompt1_answer, prompt2_question, prompt2_answer
     } = req.body;
     
+    // Check if email already exists
+    const existingUser = await pool.query(
+      'SELECT id FROM students WHERE email = $1',
+      [email]
+    );
+    
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+    
     const result = await pool.query(
       `INSERT INTO students 
        (email, name, password_hash, school, major, year, gender, sexual_orientation, date_of_birth,
@@ -58,7 +68,7 @@ const createStudent = async (req, res) => {
        RETURNING id, name, email, school, major, year, gender, sexual_orientation, date_of_birth`,
       [email, name, password, school, major, year, gender, sexual_orientation, date_of_birth,
        interests, hobbies, favorite_shows, favorite_movies, favorite_books, favorite_music, 
-       bio, looking_for, profile_photo, prompt1_question, prompt1_answer, prompt2_question, prompt2_answer]
+       bio, looking_for || 'dating', profile_photo, prompt1_question, prompt1_answer, prompt2_question, prompt2_answer]
     );
     
     res.status(201).json(result.rows[0]);
@@ -67,15 +77,17 @@ const createStudent = async (req, res) => {
   }
 };
 
-// Login student
+// Login student - works with both old and new accounts
 const loginStudent = async (req, res) => {
   try {
     const { email, password } = req.body;
     
     const result = await pool.query(
       `SELECT id, name, email, school, major, year, interests, hobbies, bio, profile_photo, 
-       looking_for, gender, sexual_orientation, date_of_birth, prompt1_answer, prompt2_answer 
-       FROM students WHERE email = $1 AND password_hash = $2`,
+       looking_for, gender, sexual_orientation, date_of_birth, 
+       prompt1_question, prompt1_answer, prompt2_question, prompt2_answer,
+       favorite_shows, favorite_movies, favorite_books, favorite_music
+       FROM students WHERE LOWER(email) = LOWER($1) AND password_hash = $2`,
       [email, password]
     );
     
