@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { studentsAPI } from '../services/api';
-import { Mail, Lock, Sparkles } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 
 export function Login() {
   const navigate = useNavigate();
@@ -33,15 +33,12 @@ export function Login() {
     }
 
     setLoading(true);
-
     try {
-      const response = await studentsAPI.login(formData);
+      const response = await studentsAPI.login(formData.email, formData.password);
       
-      // Save student info to localStorage
       localStorage.setItem('student', JSON.stringify(response.data));
       localStorage.setItem('studentId', response.data.id);
       
-      // Success! Redirect to home
       navigate('/home');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid email or password');
@@ -53,7 +50,6 @@ export function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <img 
@@ -66,16 +62,13 @@ export function Login() {
           <p className="text-gray-600">Log in to your SeeUSoon account</p>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
 
-        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email */}
           <div>
             <Label htmlFor="email" className="flex items-center gap-2 mb-2">
               <Mail className="w-4 h-4" />
@@ -92,7 +85,6 @@ export function Login() {
             />
           </div>
 
-          {/* Password */}
           <div>
             <Label htmlFor="password" className="flex items-center gap-2 mb-2">
               <Lock className="w-4 h-4" />
@@ -109,7 +101,6 @@ export function Login() {
             />
           </div>
 
-          {/* Submit Button */}
           <Button
             type="submit"
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 mt-6"
@@ -119,7 +110,6 @@ export function Login() {
           </Button>
         </form>
 
-        {/* Signup Link */}
         <div className="mt-6 text-center">
           <p className="text-gray-600">
             Don't have an account?{' '}
