@@ -6,15 +6,14 @@ const messagesRoutes = require('./routes/messages');
 const scheduleRoutes = require('./routes/schedule');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
-// CORS configuration - allow your frontend
+// CORS - Allow both Vercel URLs
 app.use(cors({
   origin: [
+    'https://see-u-soon.vercel.app',
     'https://see-u-soon-eight.vercel.app',
-    'https://see-u-soon-csqk254jk-diana-luceros-projects.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000'
+    'http://localhost:5173'
   ],
   credentials: true
 }));
@@ -28,8 +27,9 @@ app.use('/api/matches', matchesRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/schedule', scheduleRoutes);
 
-app.get('/', (req, res) => {
-  res.json({ message: 'SeeUSoon API is running!' });
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 app.listen(PORT, () => {
